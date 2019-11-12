@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <csignal>
 #include <iostream>
+#include <string>
 #include <set>
 #include <map>
 #include <tuple>
@@ -57,7 +58,7 @@ signature toSignature(std::string line) {
     return std::make_tuple(name, arity);
 }
 
-std::set<signature> getInstances(istream &input, ofstream &file) 
+std::set<signature> getInstances(istream &input, ofstream &file, ofstream &all)
 {
     std::string line;
     std::set<signature> sigs;
@@ -68,6 +69,7 @@ std::set<signature> getInstances(istream &input, ofstream &file)
         } else {
             file << line << std::endl;
         }
+        all << line << std::endl;
     }
 
     return sigs;
@@ -88,6 +90,16 @@ bool matchSignature(std::string atom, set<signature> sigs) {
     return sigs.count(sig) == 1;
 }
 
+string readRelaxed(ipstream &relaxed_stream) {
+    string line;
+    string buf;
+    while(relaxed_stream && std::getline(relaxed_stream, line)) {
+       buf.append(line);
+    }
+
+    return buf;
+}
+
 int main( int argc, char** argv )
 {
     wasp::Options::parse( argc, argv );
@@ -101,13 +113,20 @@ int main( int argc, char** argv )
 
     // Preprocess input encoding
     ipstream ground_stream;
-    ofstream ostrm("/tmp/encoding.lp", std::ios::out);
+    ofstream ostrm_filtered("/tmp/encoding-filtered.lp", std::ios::out);
+    ofstream ostrm_unfiltered("/tmp/encoding-unfiltered.lp", std::ios::out);
 
-    std::set<signature> sigs = getInstances(std::cin, ostrm);
+    std::set<signature> sigs = getInstances(std::cin, ostrm_filtered, ostrm_unfiltered);
 
-    child c("gringo --output smodels /tmp/encoding.lp", std_out > ground_stream);
+    child gringo("gringo --output smodels /tmp/encoding-filtered.lp", std_out > ground_stream);
     waspFacade.readInput(ground_stream);
-    c.wait();
+    gringo.wait();
+
+    // Obtain relaxed problem
+    ipstream relaxed_stream;
+    child lars_relax("lars-relax file --input /tmp/encoding-unfiltered.lp", std_out > relaxed_stream);
+    string relaxed = readRelaxed(relaxed_stream);
+    lars_relax.wait();
 
     // Produce map of instance variables
     std::map<std::string, Var> instanceVariables;

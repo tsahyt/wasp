@@ -1,11 +1,8 @@
-% Fix number of units, zones, sensors, and maxPU to input constants.
 comUnit(1..12).
 zone(1..12).
 sensor(1..8).
 maxPU(2).
 
-% Create choices for all possible zone2sensor assignments. This way we have all
-% literals available and can pass the actual problem instance as assumptions.
 { zone2sensor(Z,D) : zone(Z), sensor(D) }.
 
 #instance zone2sensor/2.
@@ -46,7 +43,6 @@ partnerunits(U,P) :- partnerunits(P,U), P < U.
 
 :- comUnit(U), maxPU(M), #count{ P : partnerunits(U,P) } > M.
 
-% Weak constraints to reuse an old model.
 { c_unit2zone(U,Z) : comUnit(U), zone(Z) }.
 :~ not unit2zone(U,Z), c_unit2zone(U,Z). [1@1]
 
@@ -55,8 +51,3 @@ partnerunits(U,P) :- partnerunits(P,U), P < U.
 
 { c_partnerunits(U,P) : comUnit(U), comUnit(P) }.
 :~ not partnerunits(U,P), c_partnerunits(U,P). [1@1]
-
-% Define outputs
-% #show unit2zone/2.
-% #show unit2sensor/2.
-% #show partnerunits/2.
