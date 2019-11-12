@@ -31,28 +31,10 @@ void Reconfigurator::solve()
     }
 
     while(istrm && getline(istrm, line)) {
-        cout << "Input: " << line << endl;
-        istringstream iss(line);
-
-        string word;
-        while(iss && getline(iss, word, ' ')) {
-            string atom = word.substr(0, word.size() - 2);
-            Var var = instanceVariables.find(atom)->second;
-
-            if(word[word.size() - 1] == '+') {
-                assumptions[var] = true;
-            }
-            else if (word[word.size() - 1] == '-') {
-                assumptions[var] = false;
-            }
-        }
-
         vector<Literal> assumptionsVec;
         vector<Literal> conflict;
-        for (auto a : assumptions) {
-            Literal l = Literal::createLiteralFromInt(a.second ? a.first : -a.first);
-            assumptionsVec.push_back(l);
-        }
+
+        processAssumptions(line, assumptions, assumptionsVec);
 
         unsigned int result = waspFacade.solve(assumptionsVec, conflict);
         if(result == COHERENT) {
@@ -75,5 +57,28 @@ void Reconfigurator::solve()
             }
             waspFacade.freeze(clausePointer); //Solver is restarted from level 0. After this it is not possible to retrieve the answer set (you have to call solve again)
         }
+    }
+}
+
+void Reconfigurator::processAssumptions(string line, map<Var,bool> assumptions, vector<Literal> assumptionsVec) {
+    cout << "Input: " << line << endl;
+    istringstream iss(line);
+
+    string word;
+    while(iss && getline(iss, word, ' ')) {
+        string atom = word.substr(0, word.size() - 2);
+        Var var = instanceVariables.find(atom)->second;
+
+        if(word[word.size() - 1] == '+') {
+            assumptions[var] = true;
+        }
+        else if (word[word.size() - 1] == '-') {
+            assumptions[var] = false;
+        }
+    }
+
+    for (auto a : assumptions) {
+        Literal l = Literal::createLiteralFromInt(a.second ? a.first : -a.first);
+        assumptionsVec.push_back(l);
     }
 }

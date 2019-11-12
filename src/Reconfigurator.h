@@ -22,5 +22,7 @@ class Reconfigurator : public ClauseListener
         WaspFacade& waspFacade;
         unordered_set<Clause*> clauses;
         map<string, Var> instanceVariables;
+
+        void processAssumptions(string line, map<Var,bool> assumptions, vector<Literal> assumptionsVec);
 };
 #endif /* end of include guard: RECONFIGURATOR_H */
