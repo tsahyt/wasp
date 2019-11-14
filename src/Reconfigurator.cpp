@@ -70,13 +70,18 @@ vector<Literal> Reconfigurator::processAssumptions(string line) {
     string word;
     while(iss && getline(iss, word, ' ')) {
         string atom = word.substr(0, word.size() - 2);
-        Var var = instanceVariables.find(atom)->second;
+        auto search = instanceVariables.find(atom);
 
-        if(word[word.size() - 1] == '+') {
-            assumptions[var] = true;
-        }
-        else if (word[word.size() - 1] == '-') {
-            assumptions[var] = false;
+        if(search != instanceVariables.end()) {
+            Var var = search->second;
+            if(word[word.size() - 1] == '+') {
+                assumptions[var] = true;
+            }
+            else if (word[word.size() - 1] == '-') {
+                assumptions[var] = false;
+            }
+        } else {
+            cerr << "WARNING: Ignoring unknown atom " << atom << endl;
         }
     }
 
