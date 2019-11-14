@@ -128,19 +128,21 @@ int main( int argc, char** argv )
     string relaxed = readRelaxed(relaxed_stream);
     lars_relax.wait();
 
-    // Produce map of instance variables
+    // Produce map of instance variables and one of all variables.
     std::map<std::string, Var> instanceVariables;
+    std::map<std::string, Var> allVariables;
     for (unsigned int i = 0; i < waspFacade.numberOfVariables(); i++) {
         if(!VariableNames::isHidden(i)) {
             std::string name = VariableNames::getName(i);
             if(matchSignature(name, sigs)) {
                 instanceVariables.insert({name, i});
             }
+            allVariables.insert({name, i});
         }
     }
     
     // Create and run Reconfigurator
-    Reconfigurator reconf = Reconfigurator(waspFacade, instanceVariables);
+    Reconfigurator reconf = Reconfigurator(waspFacade, instanceVariables, allVariables, relaxed);
     reconf.solve();
     
     waspFacade.onFinish();

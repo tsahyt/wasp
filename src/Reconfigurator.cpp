@@ -8,9 +8,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <boost/process.hpp>
 
-Reconfigurator::Reconfigurator(WaspFacade& w, map<string, Var> v) : 
-    waspFacade(w), instanceVariables(v) 
+using namespace boost::process;
+
+Reconfigurator::Reconfigurator(WaspFacade& w, map<string, Var> v, map<string,Var> a, string r) :
+    waspFacade(w), instanceVariables(v), allVariables(a), relaxedProgram(r)
 {
     waspFacade.attachClauseListener(this);
     mkfifo("reconfigurate", 0777);
@@ -24,19 +27,18 @@ void Reconfigurator::solve()
 {
     ifstream istrm("reconfigurate", ios::in);
     string line;
-    map<Var, bool> assumptions;
 
     for (auto var : instanceVariables) {
         assumptions[var.second] = false;
     }
 
     while(istrm && getline(istrm, line)) {
-        vector<Literal> assumptionsVec;
         vector<Literal> conflict;
 
-        processAssumptions(line, assumptions, assumptionsVec);
+        vector<Literal> assumptions_vec = processAssumptions(line);
+        unordered_set<Var> relaxed_answer_set = computeRelaxedAnswerSet();
 
-        unsigned int result = waspFacade.solve(assumptionsVec, conflict);
+        unsigned int result = waspFacade.solve(assumptions_vec, conflict);
         if(result == COHERENT) {
             cout << "Coherent under assumptions" << endl;
         }
@@ -60,7 +62,8 @@ void Reconfigurator::solve()
     }
 }
 
-void Reconfigurator::processAssumptions(string line, map<Var,bool> assumptions, vector<Literal> assumptionsVec) {
+vector<Literal> Reconfigurator::processAssumptions(string line) {
+    vector<Literal> avec;
     cout << "Input: " << line << endl;
     istringstream iss(line);
 
@@ -79,6 +82,47 @@ void Reconfigurator::processAssumptions(string line, map<Var,bool> assumptions, 
 
     for (auto a : assumptions) {
         Literal l = Literal::createLiteralFromInt(a.second ? a.first : -a.first);
-        assumptionsVec.push_back(l);
+        avec.push_back(l);
     }
+
+    return avec;
+}
+
+string Reconfigurator::relaxedAssumptions() {
+    string prog;
+    prog.append(relaxedProgram);
+
+    for (auto a : assumptions) {
+        if(!a.second) continue;
+        string x = VariableNames::getName(a.first);
+        prog.append(x + ".");
+    }
+
+    return prog;
+}
+
+unordered_set<Var> Reconfigurator::computeRelaxedAnswerSet() {
+    string line;
+    ipstream astream;
+    ofstream program_file("/tmp/relaxed.lp", std::ios::out);
+    unordered_set<Var> answer_set;
+
+    program_file << relaxedAssumptions() << endl;
+    child clingo("clingo --outf=1 /tmp/relaxed.lp", std_out > astream);
+
+    stringstream answer_stream;
+    while(astream && std::getline(astream, line)) {
+        if(line[0] == '%') continue;
+        answer_stream << line << endl;
+    }
+
+    string atom;
+    while(getline(answer_stream, atom, ' ')) {
+        auto v = allVariables[atom.substr(0, atom.size() - 1)];
+        answer_set.insert(v);
+    }
+
+    clingo.wait();
+
+    return answer_set;
 }
