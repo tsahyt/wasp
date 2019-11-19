@@ -16,16 +16,17 @@ Reconfigurator::Reconfigurator(WaspFacade& w, map<string, Var> v, map<string,Var
     waspFacade(w), instanceVariables(v), allVariables(a), relaxedProgram(r)
 {
     waspFacade.attachClauseListener(this);
-    mkfifo("reconfigurate", 0777);
+//    mkfifo("reconfigurate", 0777);
 };
 
 Reconfigurator::~Reconfigurator() {
-    unlink("reconfigurate");
+ //   unlink("reconfigurate");
 }
 
 void Reconfigurator::solve()
 {
-    ifstream istrm("reconfigurate", ios::in);
+//    ifstream istrm("reconfigurate", ios::in);
+    stringstream istrm("preplace(1,1);+\npreplace(1,1);-\npreplace(1,1);+");
     string line;
 
     for (auto var : instanceVariables) {

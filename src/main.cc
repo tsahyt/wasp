@@ -113,20 +113,21 @@ int main( int argc, char** argv )
 
     // Preprocess input encoding
     ipstream ground_stream;
-    ofstream ostrm_filtered("/tmp/encoding-filtered.lp", std::ios::out);
-    ofstream ostrm_unfiltered("/tmp/encoding-unfiltered.lp", std::ios::out);
+    ofstream ostrm_filtered("encoding-filtered.lp", std::ios::out);
+    ofstream ostrm_unfiltered("encoding-unfiltered.lp", std::ios::out);
 
     std::set<signature> sigs = getInstances(std::cin, ostrm_filtered, ostrm_unfiltered);
 
-    child gringo("gringo --output smodels /tmp/encoding-filtered.lp", std_out > ground_stream);
+    child gringo("gringo --output smodels encoding-filtered.lp", std_out > ground_stream);
     waspFacade.readInput(ground_stream);
     gringo.wait();
 
     // Obtain relaxed problem
-    ipstream relaxed_stream;
-    child lars_relax("lars-relax file --input /tmp/encoding-unfiltered.lp", std_out > relaxed_stream);
-    string relaxed = readRelaxed(relaxed_stream);
-    lars_relax.wait();
+    string relaxed = "hole(1..5). pigeon(1..6). place(P,H) :- pigeon(P), hole(H).";
+
+    // Clean up temporary files
+    unlink("encoding-filtered.lp");
+    unlink("encoding-unfiltered.lp");
 
     // Produce map of instance variables and one of all variables.
     std::map<std::string, Var> instanceVariables;
