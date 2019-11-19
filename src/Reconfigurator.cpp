@@ -34,9 +34,32 @@ void Reconfigurator::solve()
 
     while(istrm && getline(istrm, line)) {
         vector<Literal> conflict;
+        int nClauses = clauses.size();
 
+        // Process Assumptions and retrieve relaxed answer set
         vector<Literal> assumptions_vec = processAssumptions(line);
         unordered_set<Var> relaxed_answer_set = computeRelaxedAnswerSet();
+
+        // Manage clauses
+        for(auto it = clauses.begin(); it != clauses.end(); ++it) {
+            Clause& clause = **it;
+            bool contained = true;
+            for(unsigned int i = 0; i < clause.size(); ++i) {
+                Literal l = clause[i];
+                if(l.isPositive()) {
+                    contained &= relaxed_answer_set.count(l.getVariable()) == 1;
+                } else {
+                    contained &= relaxed_answer_set.count(l.getVariable()) == 0;
+                }
+            }
+            if(contained) {
+                waspFacade.thaw(&clause);
+                cerr << "Unfreezing " << &clause << endl;
+            } else {
+                waspFacade.freeze(&clause);
+                cerr << "Freezing " << &clause << endl;
+            }
+        }
 
         unsigned int result = waspFacade.solve(assumptions_vec, conflict);
         if(result == COHERENT) {
@@ -47,18 +70,7 @@ void Reconfigurator::solve()
             cout << "Incoherent under assumptions" << endl;
         }
 
-        cout << "Learned clauses: " << clauses.size() << endl;
-        for(auto it = clauses.begin(); it != clauses.end(); ++it) {
-            Clause* clausePointer = *it;
-            Clause& clause = *clausePointer;
-            cout << "Processing clause:" << endl;
-            for(unsigned int i = 0; i < clause.size(); i++) {
-                cout << "\t Lit in position " << i << " - id: " << clause[i].getId();
-                if(!VariableNames::isHidden(clause[i].getVariable()))
-                    cout << " - name: " << VariableNames::getName(clause[i].getVariable()) << endl;
-            }
-            waspFacade.freeze(clausePointer); //Solver is restarted from level 0. After this it is not possible to retrieve the answer set (you have to call solve again)
-        }
+        cout << "Learned " << clauses.size() - nClauses << " clauses" << endl;
     }
 }
 

@@ -1,6 +1,6 @@
-comUnit(1..12).
-zone(1..12).
-sensor(1..8).
+comUnit(1..21).
+zone(1..31).
+sensor(1..41).
 maxPU(2).
 
 { zone2sensor(Z,D) : zone(Z), sensor(D) }.
