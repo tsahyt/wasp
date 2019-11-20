@@ -1109,6 +1109,7 @@ Solver::removeSatisfied(
         assert_msg( clauses[ i ] != NULL, "Current clause is NULL" );
         Clause* currentPointer = clauses[ i ];
         Clause& current = *currentPointer;
+        if(current.frozen()) continue;
         
         if( !current.isLearned() && !current.canBeDeleted() )
         {
@@ -1130,7 +1131,11 @@ Solver::removeSatisfied(
                 if( isLocked( current ) )
                     setImplicant( current[ 0 ].getVariable(), NULL );
                 assert( !isLocked( current ) );
+                
                 delete currentPointer;
+                for(unsigned int i = 0; i < clauseListeners.size(); i++) {
+                    clauseListeners[i]->onDeletingClause(currentPointer);
+                }     
                 clauses[ i ] = clauses.back();            
                 clauses.pop_back();
             }
@@ -1150,6 +1155,9 @@ Solver::removeSatisfied(
                     literalsInClauses -= size;
                 assert( !isLocked( current ) );
                 delete currentPointer;
+                for(unsigned int i = 0; i < clauseListeners.size(); i++) {
+                    clauseListeners[i]->onDeletingClause(currentPointer);
+                }
                 clauses[ i ] = clauses.back();            
                 clauses.pop_back();            
             }
@@ -1441,6 +1449,7 @@ void Solver::freeze(Clause* clause) {
     nbFrozenClauses++;
     detachClause(*clause);
     literalsInLearnedClauses -= clause->size();
+    clause->freeze();
 }
 
 void Solver::thaw(Clause* clause) {
@@ -1452,4 +1461,5 @@ void Solver::thaw(Clause* clause) {
     nbFrozenClauses--;
     attachClause(*clause);
     literalsInLearnedClauses += clause->size();
+    clause->thaw();
 }
