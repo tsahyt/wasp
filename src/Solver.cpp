@@ -1109,7 +1109,7 @@ Solver::removeSatisfied(
         assert_msg( clauses[ i ] != NULL, "Current clause is NULL" );
         Clause* currentPointer = clauses[ i ];
         Clause& current = *currentPointer;
-        if(current.frozen()) continue;
+        if(current.frozen()) { ++i; continue; }
         
         if( !current.isLearned() && !current.canBeDeleted() )
         {
