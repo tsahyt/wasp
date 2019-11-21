@@ -35,6 +35,8 @@ void Reconfigurator::solve()
     while(istrm && getline(istrm, line)) {
         vector<Literal> conflict;
         int nClauses = clauses.size();
+        int nFreezing = 0;
+        int nThawing = 0;
 
         // Process Assumptions and retrieve relaxed answer set
         vector<Literal> assumptions_vec = processAssumptions(line);
@@ -54,12 +56,14 @@ void Reconfigurator::solve()
             }
             if(contained) {
                 waspFacade.thaw(&clause);
-                cerr << "Unfreezing " << &clause << endl;
+                ++nThawing;
             } else {
                 waspFacade.freeze(&clause);
-                cerr << "Freezing " << &clause << endl;
+                ++nFreezing;
             }
         }
+
+        cout << "Froze " << nFreezing << " clauses" << " and thawed " << nThawing << " clauses" << endl;
 
         unsigned int result = waspFacade.solve(assumptions_vec, conflict);
         if(result == COHERENT) {
