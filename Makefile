@@ -4,31 +4,31 @@
 # to compile different binaries
 BUILD = release
 cxxflags.debug = -Wall -Wextra -std=c++11 -g
-linkflags.debug = -lm -ldl -pthread
+linkflags.debug = -lm -ldl -pthread -lboost_timer
 cxxflags.trace = -Wall -Wextra -std=c++11 -DTRACE_ON
-linkflags.trace = -lm -ldl -pthread
+linkflags.trace = -lm -ldl -pthread -lboost_timer
 cxxflags.tracerelease = -Wall -Wextra -std=c++11 -DTRACE_ON -DNDEBUG -O3
-linkflags.tracerelease = -lm -ldl -pthread
+linkflags.tracerelease = -lm -ldl -pthread -lboost_timer
 cxxflags.release = -Wall -Wextra -std=c++11 -DNDEBUG -O3
-linkflags.release = -lm -ldl -pthread
+linkflags.release = -lm -ldl -pthread -lboost_timer
 cxxflags.gprof = -Wall -Wextra -std=c++11 -DNDEBUG -O3 -g -pg
-linkflags.gprof = -lm -g -pg -ldl -pthread
+linkflags.gprof = -lm -g -pg -ldl -pthread -lboost_timer
 cxxflags.estats = -Wall -Wextra -std=c++11 -DNDEBUG -DSTATS_ON -DESTATS_ON -O3
-linkflags.estats = -lm -ldl -pthread
+linkflags.estats = -lm -ldl -pthread -lboost_timer
 
 # for g++ <= 4.6
 cxxflags.debug0x = -Wall -Wextra -std=c++0x
-linkflags.debug0x = -lm -ldl -pthread
+linkflags.debug0x = -lm -ldl -pthread -lboost_timer
 cxxflags.trace0x = -Wall -Wextra -std=c++0x -DTRACE_ON
-linkflags.trace = -lm -ldl -pthread
+linkflags.trace = -lm -ldl -pthread -lboost_timer
 cxxflags.tracerelease0x = -Wall -Wextra -std=c++0x -DTRACE_ON -DNDEBUG -O3
-linkflags.tracerelease0x = -lm -ldl -pthread
+linkflags.tracerelease0x = -lm -ldl -pthread -lboost_timer
 cxxflags.release0x = -Wall -Wextra -std=c++0x -DNDEBUG -O3
-linkflags.release0x = -lm -ldl -pthread
+linkflags.release0x = -lm -ldl -pthread -lboost_timer
 cxxflags.gprof0x = -Wall -Wextra -std=c++0x -DNDEBUG -O3 -g -pg 
-linkflags.gprof0x = -lm -g -pg -ldl -pthread
+linkflags.gprof0x = -lm -g -pg -ldl -pthread -lboost_timer
 cxxflags.estats0x = -Wall -Wextra -std=c++0x -DNDEBUG -DSTATS_ON -DESTATS_ON -O3
-linkflags.estats0x = -lm -ldl -pthread
+linkflags.estats0x = -lm -ldl -pthread -lboost_timer
 ####
 
 SCRIPT = no

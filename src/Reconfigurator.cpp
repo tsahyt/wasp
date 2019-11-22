@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <boost/process.hpp>
+#include <boost/timer/timer.hpp>
 
 using namespace boost::process;
 
@@ -33,6 +34,8 @@ void Reconfigurator::solve()
     }
 
     while(istrm && getline(istrm, line)) {
+        boost::timer::auto_cpu_timer t;
+
         vector<Literal> conflict;
         int nClauses = clauses.size();
         int nFreezing = 0;
@@ -73,6 +76,7 @@ void Reconfigurator::solve()
             assert(result == INCOHERENT);
             cout << "Incoherent under assumptions" << endl;
         }
+        waspFacade.printAnswerSet();
 
         cout << "Learned " << clauses.size() - nClauses << " clauses" << endl;
     }
