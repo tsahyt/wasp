@@ -85,16 +85,21 @@ vector<Literal> Reconfigurator::processAssumptions(string line) {
 
     string word;
     while(iss && getline(iss, word, ' ')) {
-        string atom = word.substr(0, word.size() - 2);
+        auto semicolon = word.find(';');
+        string atom = word.substr(0, semicolon);
+        string op = word.substr(semicolon + 1);
         auto search = instanceVariables.find(atom);
 
         if(search != instanceVariables.end()) {
             Var var = search->second;
-            if(word[word.size() - 1] == '+') {
+            if(op[0] == '+') {
                 assumptions[var] = true;
             }
-            else if (word[word.size() - 1] == '-') {
+            else if (op[0] == '-') {
                 assumptions[var] = false;
+            }
+            else {
+                cerr << "WARNING: Unknown operation!" << endl;
             }
         } else {
             cerr << "WARNING: Ignoring unknown atom " << atom << endl;
