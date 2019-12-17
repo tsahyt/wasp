@@ -57,10 +57,10 @@ void Reconfigurator::solve()
                     contained &= relaxed_answer_set.count(l.getVariable()) == 0;
                 }
             }
-            if(contained) {
+            if(contained && clause.frozen()) {
                 waspFacade.thaw(&clause);
                 ++nThawing;
-            } else {
+            } else if (!clause.frozen()) {
                 waspFacade.freeze(&clause);
                 ++nFreezing;
             }
