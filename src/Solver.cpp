@@ -886,7 +886,7 @@ Solver::minisatDeletion()
         ++i;
     }
 
-    finalizeDeletion( size - numberOfDeletions );
+    finalizeDeletion( numberOfLearnedClauses() - numberOfDeletions );
     statistics( this, onDeletion( size, numberOfDeletions ) );
 }
 
@@ -975,8 +975,7 @@ Solver::glucoseDeletion()
         
         ++i;
     }
-
-    finalizeDeletion( size - numberOfDeletions );
+    finalizeDeletion( numberOfLearnedClauses() - numberOfDeletions );    
     statistics( this, onDeletion( size, numberOfDeletions ) );
 }
 
